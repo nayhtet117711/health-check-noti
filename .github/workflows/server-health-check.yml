@@ -19,12 +19,38 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Get Previous Server State
+        id: prev
+        run: |
+          echo "prev_state=${SERVER_STATE}" >> $GITHUB_OUTPUT
+
+      - name: Check Server Health
+        id: check
+        run: |
+          if curl -fs "${HEALTH_CHECK_URL}"; then
+            echo "status=UP" >> $GITHUB_OUTPUT
+          else
+            echo "status=DOWN" >> $GITHUB_OUTPUT
+          fi
+      
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Send Alert to Telegram
+        if: steps.check.outputs.status != steps.prev.outputs.prev_state
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            Hello from GitHub Actions!
+            $(
+              [[ "${{ steps.check.outputs.status }}" == "up" ]] && echo "🟢" || echo "🔴"
+            ) Server is ${{ steps.check.outputs.status }}!
+
+      - name: Save Current Server State
+        if: steps.check.outputs.status != steps.prev.outputs.prev_state
+        run: |
+          curl -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/environments/monitoring/variables/SERVER_STATE \
+            -d '{"name":"SERVER_STATE","value":"${{ steps.check.outputs.status }}"}'
 
