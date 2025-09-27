@@ -24,6 +24,10 @@ jobs:
         run: |
           echo "prev_state=${SERVER_STATE}" >> $GITHUB_OUTPUT
 
+      - name: Debug
+        run: |
+          echo "Previous state: ${{ steps.prev.outputs.prev_state }}"
+
       - name: Check Server Health
         id: check
         run: |
