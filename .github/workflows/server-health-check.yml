@@ -32,6 +32,15 @@ jobs:
           else
             echo "status=DOWN" >> $GITHUB_OUTPUT
           fi
+
+      - name: Set Status Emoji
+        id: emoji
+        run: |
+          if [[ "${{ steps.check.outputs.status }}" == "UP" ]]; then
+            echo "emoji=🟢" >> $GITHUB_OUTPUT
+          else
+            echo "emoji=🔴" >> $GITHUB_OUTPUT
+          fi
       
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Send Alert to Telegram
@@ -40,10 +49,7 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-            $(
-              [[ "${{ steps.check.outputs.status }}" == "up" ]] && echo "🟢" || echo "🔴"
-            ) Server is ${{ steps.check.outputs.status }}!
+          message: "${{ steps.emoji.outputs.emoji }} Server is ${{ steps.check.outputs.status }}!"
 
       - name: Save Current Server State
         if: steps.check.outputs.status != steps.prev.outputs.prev_state
