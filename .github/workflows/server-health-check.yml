@@ -56,7 +56,7 @@ jobs:
         run: |
           curl -X PATCH \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/environments/monitoring/variables/SERVER_STATE \
             -d '{"name":"SERVER_STATE","value":"${{ steps.check.outputs.status }}"}'
 
