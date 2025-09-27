@@ -16,6 +16,9 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     environment: monitoring
+    env:
+      HEALTH_CHECK_URL: ${{ vars.HEALTH_CHECK_URL }}
+      SERVER_STATE: ${{ vars.SERVER_STATE }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
